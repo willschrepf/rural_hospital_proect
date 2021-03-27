@@ -1,0 +1,29 @@
+---
+title: "data_analysis"
+author: "Will Schrepferman"
+date: "3/27/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(readxl)
+library(janitor)
+```
+
+```{r}
+raw_data <- read_excel("hospitals_raw.xlsx") %>%
+  clean_names()
+
+raw_data %>%
+  pivot_wider(names_from = x, values_from = y) %>%
+  clean_names() %>%
+  select(name, address_line_one, address_line_two, administrator, telephone, fax, type_of_ownership,
+         type_of_hospital, staffed_beds, license_number, license_expire_date) %>%
+  unnest() %>%
+  mutate(address = paste(address_line_one, address_line_two, sep = ", ")) %>%
+  select(name, address, type_of_hospital, staffed_beds, license_number)
+
+```
+
