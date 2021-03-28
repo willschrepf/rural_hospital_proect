@@ -10,13 +10,16 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(readxl)
 library(janitor)
+library(ggmap)
+library(sf)
+library(mapview)
 ```
 
 ```{r}
 raw_data <- read_excel("hospitals_raw.xlsx") %>%
   clean_names()
 
-raw_data %>%
+data <- raw_data %>%
   pivot_wider(names_from = x, values_from = y) %>%
   clean_names() %>%
   select(name, address_line_one, address_line_two, administrator, telephone, fax, type_of_ownership,
@@ -25,5 +28,32 @@ raw_data %>%
   mutate(address = paste(address_line_one, address_line_two, sep = ", ")) %>%
   select(name, address, type_of_hospital, staffed_beds, license_number)
 
+geo_data <- geocode(data$address)
+
+
+
+indiana <- map_data('state', region = 'indiana')
+
+ggplot(indiana, aes(x = long, y = lat)) + 
+  geom_polygon(fill = "lightblue", color = "black") + 
+  theme_void() +
+  geom_point(aes(x = lon, y = lat), data = geo_data,
+ alpha = .5, color="darkred", size = 3)
+
+
+
+myMap <- get_map(location="indiana", source="google", zoom = 7)
+
+p <- ggmap(myMap) +
+  geom_point(aes(x = lon, y = lat), data = geo_data,
+ alpha = 1, color="darkred", size = 1) +
+  scale_x_continuous(limits = c(-88.1, -84.6)) +
+  scale_y_continuous(limits = c(37.76,42))
+
+locations_sf <- st_as_sf(geo_data, coords = c("lon", "lat"), crs = 4326)
+  
+mapview(locations_sf)
+
+read_excel("nad.xlsx")
 ```
 
