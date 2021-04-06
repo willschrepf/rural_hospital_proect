@@ -14,6 +14,7 @@ library(ggmap)
 library(sf)
 library(mapview)
 library(skimr)
+library(geosphere)
 ```
 
 ```{r}
@@ -31,7 +32,12 @@ data <- raw_data %>%
 
 geo_hosp_data <- geocode(data$address)
 
+geo_hosp_data_append <- data %>%
+  mutate_geocode(address)
+
 write_csv(geo_hosp_data, "geo_hosp_data.csv")
+write_csv(geo_hosp_data, "geo_hosp_data_append.csv")
+
 
 indiana <- map_data('state', region = 'indiana')
 
@@ -46,8 +52,8 @@ ggplot(indiana, aes(x = long, y = lat)) +
 myMap <- get_map(location="indiana", source="google", zoom = 7)
 
 p <- ggmap(myMap) +
-  geom_point(aes(x = lon, y = lat), data = geo_data,
- alpha = 1, color="darkred", size = 1) +
+  geom_point(aes(x = lon, y = lat), data = geo_hosp_data,
+ alpha = .5, color="orange", size = 2.5) +
   scale_x_continuous(limits = c(-88.1, -84.6)) +
   scale_y_continuous(limits = c(37.76,42))
 
@@ -62,7 +68,7 @@ read_excel("nad.xlsx")
 bigdata <- read_excel("Book2.xlsx") %>%
   clean_names()
 
-sample_bigdata <- sample_n(bigdata, 10000)
+sample_bigdata <- sample_n(bigdata, 1000)
 
 geo_data_big_sample <- sample_bigdata %>%
   mutate(lon = longitude) %>%
@@ -74,10 +80,18 @@ geo_data_big <- bigdata %>%
 
 p <- ggmap(myMap) +
   geom_point(aes(x = lon, y = lat), data = geo_data_big,
- alpha = .5, color="darkred", size = .05) +
+ alpha = .35, color="darkred", size = .005) +
+  geom_point(aes(x = lon, y = lat), data = geo_hosp_data,
+ alpha = .5, color="orange", size = 2.5) +
   scale_x_continuous(limits = c(-88.1, -84.6)) +
   scale_y_continuous(limits = c(37.76,42))
 
 ```
+
+```{r}
+geo_data_big_sample
+geo_hosp_data
+```
+
 
 
