@@ -13,6 +13,7 @@ library(janitor)
 library(ggmap)
 library(sf)
 library(mapview)
+library(skimr)
 ```
 
 ```{r}
@@ -28,16 +29,16 @@ data <- raw_data %>%
   mutate(address = paste(address_line_one, address_line_two, sep = ", ")) %>%
   select(name, address, type_of_hospital, staffed_beds, license_number)
 
-geo_data <- geocode(data$address)
+geo_hosp_data <- geocode(data$address)
 
-
+write_csv(geo_hosp_data, "geo_hosp_data.csv")
 
 indiana <- map_data('state', region = 'indiana')
 
 ggplot(indiana, aes(x = long, y = lat)) + 
   geom_polygon(fill = "lightblue", color = "black") + 
   theme_void() +
-  geom_point(aes(x = lon, y = lat), data = geo_data,
+  geom_point(aes(x = lon, y = lat), data = geo_hosp_data,
  alpha = .5, color="darkred", size = 3)
 
 
@@ -56,4 +57,27 @@ mapview(locations_sf)
 
 read_excel("nad.xlsx")
 ```
+
+```{r}
+bigdata <- read_excel("Book2.xlsx") %>%
+  clean_names()
+
+sample_bigdata <- sample_n(bigdata, 10000)
+
+geo_data_big_sample <- sample_bigdata %>%
+  mutate(lon = longitude) %>%
+  mutate(lat = latitude)
+
+geo_data_big <- bigdata %>%
+  mutate(lon = longitude) %>%
+  mutate(lat = latitude)
+
+p <- ggmap(myMap) +
+  geom_point(aes(x = lon, y = lat), data = geo_data_big,
+ alpha = .5, color="darkred", size = .05) +
+  scale_x_continuous(limits = c(-88.1, -84.6)) +
+  scale_y_continuous(limits = c(37.76,42))
+
+```
+
 
