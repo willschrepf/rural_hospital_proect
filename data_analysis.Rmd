@@ -36,7 +36,7 @@ geo_hosp_data_append <- data %>%
   mutate_geocode(address)
 
 write_csv(geo_hosp_data, "geo_hosp_data.csv")
-write_csv(geo_hosp_data, "geo_hosp_data_append.csv")
+write_csv(geo_hosp_data_append, "geo_hosp_data_append.csv")
 
 
 indiana <- map_data('state', region = 'indiana')
@@ -90,7 +90,22 @@ p <- ggmap(myMap) +
 
 ```{r}
 geo_data_big_sample
-geo_hosp_data
+geo_hosp_data_append
+
+hosp_simple <- geo_hosp_data_append %>%
+  select(name, lon, lat)
+
+test <- "simple"
+for(i in 1:179){
+  name <- hosp_simple[[1]][i]
+   
+  name <- gsub(" ", "_", name, perl=TRUE)
+  
+  geo_data_big_sample <- geo_data_big_sample %>%
+    mutate(!!paste("dist_from", name, sep = "_") := distm(c(lon, lat), c(hosp_simple[[2]][i], hosp_simple[[3]][i]), fun = distHaversine))
+}
+
+t <- 1
 ```
 
 
